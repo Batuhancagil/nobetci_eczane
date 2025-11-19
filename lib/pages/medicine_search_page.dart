@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:csv/csv.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../models/medicine_result.dart';
+import 'medicine_detail_page.dart';
 
 class MedicineSearchPage extends StatefulWidget {
   const MedicineSearchPage({super.key});
@@ -76,10 +78,16 @@ class _MedicineSearchPageState extends State<MedicineSearchPage> {
       int idxCompany = header.indexOf('Pharmaceutical Company');
       int idxBarcode = header.indexOf('Barcode');
       int idxLastUpdate = header.indexOf('Last Update Date');
-      int idxDetailUrl = header.indexOf('Detail Page URL');
       int idxHowToUse = header.indexOf('Nasıl Kullanılmalı?');
       int idxIndications =
           header.indexOf('Hangi Hastalıklar İçin Kullanılır?');
+      
+      // Citation source URLs (open source only)
+      int idxSourceActiveIngredient = header.indexOf('Source URL - Active Ingredient');
+      int idxSourceAtcCode = header.indexOf('Source URL - ATC Code');
+      int idxSourceCompany = header.indexOf('Source URL - Company');
+      int idxSourceUsageInfo = header.indexOf('Source URL - Usage Info');
+      int idxSourceDrugInfo = header.indexOf('Source URL - Drug Info');
 
       String getField(List<dynamic> row, int idx) {
         if (idx < 0 || idx >= row.length) return '';
@@ -101,11 +109,17 @@ class _MedicineSearchPageState extends State<MedicineSearchPage> {
         final prescStatus = getField(row, idxPrescStatus).trim();
         final atc = getField(row, idxAtc).trim();
         final lastUpdate = getField(row, idxLastUpdate).trim();
-        final detailUrl = getField(row, idxDetailUrl).trim();
         final howToUse = getField(row, idxHowToUse).trim();
         final indications = getField(row, idxIndications).trim();
         final letter = getField(row, idxLetter).trim();
         final prosp = getField(row, idxProsp).trim();
+        
+        // Citation source URLs
+        final sourceUrlActiveIngredient = getField(row, idxSourceActiveIngredient).trim();
+        final sourceUrlAtcCode = getField(row, idxSourceAtcCode).trim();
+        final sourceUrlCompany = getField(row, idxSourceCompany).trim();
+        final sourceUrlUsageInfo = getField(row, idxSourceUsageInfo).trim();
+        final sourceUrlDrugInfo = getField(row, idxSourceDrugInfo).trim();
 
         meds.add(
           MedicineResult(
@@ -120,11 +134,15 @@ class _MedicineSearchPageState extends State<MedicineSearchPage> {
                 prescStatus.isEmpty ? null : prescStatus,
             atcCode: atc.isEmpty ? null : atc,
             lastUpdate: lastUpdate.isEmpty ? null : lastUpdate,
-            detailUrl: detailUrl.isEmpty ? null : detailUrl,
             howToUse: howToUse.isEmpty ? null : howToUse,
             indications: indications.isEmpty ? null : indications,
             letter: letter.isEmpty ? null : letter,
             prosp: prosp.isEmpty ? null : prosp,
+            sourceUrlActiveIngredient: sourceUrlActiveIngredient.isEmpty ? null : sourceUrlActiveIngredient,
+            sourceUrlAtcCode: sourceUrlAtcCode.isEmpty ? null : sourceUrlAtcCode,
+            sourceUrlCompany: sourceUrlCompany.isEmpty ? null : sourceUrlCompany,
+            sourceUrlUsageInfo: sourceUrlUsageInfo.isEmpty ? null : sourceUrlUsageInfo,
+            sourceUrlDrugInfo: sourceUrlDrugInfo.isEmpty ? null : sourceUrlDrugInfo,
           ),
         );
       }
@@ -410,41 +428,6 @@ class _MedicineSearchPageState extends State<MedicineSearchPage> {
   }
 }
 
-/// MODEL
-class MedicineResult {
-  final String name; // Drug Name
-  final String activeIngredient; // Active Ingredient
-  final String company; // Pharmaceutical Company
-  final String? price; // Price
-  final String? barcode; // Barcode
-  final String? prescriptionRequired; // Prescription Required (hkt-küb)
-  final String? prescriptionStatus; // Prescription Status
-  final String? atcCode; // ATC Code
-  final String? lastUpdate; // Last Update Date
-  final String? detailUrl; // Detail Page URL
-  final String? howToUse; // Nasıl Kullanılmalı?
-  final String? indications; // Hangi Hastalıklar İçin Kullanılır?
-  final String? letter; // Letter
-  final String? prosp; // Prosp
-
-  MedicineResult({
-    required this.name,
-    required this.activeIngredient,
-    required this.company,
-    this.price,
-    this.barcode,
-    this.prescriptionRequired,
-    this.prescriptionStatus,
-    this.atcCode,
-    this.lastUpdate,
-    this.detailUrl,
-    this.howToUse,
-    this.indications,
-    this.letter,
-    this.prosp,
-  });
-}
-
 /// LİSTEDEKİ KISA KART
 class _MedicineCard extends StatelessWidget {
   final MedicineResult med;
@@ -611,315 +594,6 @@ class _MedicineCard extends StatelessWidget {
                       ),
                     ),
                   ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// DETAY SAYFASI (Önceden yazdığımız tasarım aynı şekilde duruyor)
-class MedicineDetailPage extends StatelessWidget {
-  final MedicineResult med;
-
-  const MedicineDetailPage({super.key, required this.med});
-
-  Color _statusColor() {
-    final status = (med.prescriptionStatus ?? med.prescriptionRequired ?? '')
-        .toLowerCase();
-    if (status.contains('reçetesiz') || status.contains('otc')) {
-      return Colors.green;
-    }
-    if (status.contains('reçeteli') || status.contains('kırmızı')) {
-      return Colors.red;
-    }
-    return Colors.blueGrey;
-  }
-
-  String _statusText() {
-    if (med.prescriptionStatus != null &&
-        med.prescriptionStatus!.isNotEmpty) {
-      return med.prescriptionStatus!;
-    }
-    if (med.prescriptionRequired != null &&
-        med.prescriptionRequired!.isNotEmpty) {
-      return med.prescriptionRequired!;
-    }
-    return 'Reçete bilgisi yok';
-  }
-
-  Future<void> _openDetailUrl(BuildContext context) async {
-    final url = med.detailUrl;
-    if (url == null || url.isEmpty) return;
-
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Detay sayfası açılamadı.')),
-      );
-    }
-  }
-
-  Widget _buildInfoRow(String label, String? value) {
-    if (value == null || value.trim().isEmpty) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '$label: ',
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(
-                height: 1.3,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSection({
-    required String title,
-    required String? content,
-  }) {
-    if (content == null || content.trim().isEmpty) {
-      return const SizedBox.shrink();
-    }
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: ExpansionTile(
-        tilePadding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        childrenPadding:
-            const EdgeInsets.fromLTRB(16, 0, 16, 12),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        children: [
-          Text(
-            content.trim(),
-            style: const TextStyle(height: 1.4),
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final statusColor = _statusColor();
-    final statusText = _statusText();
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          med.name,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ÜST KART: İSİM + STATUS
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(14.0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(
-                        Icons.medication_rounded,
-                        size: 40,
-                        color: statusColor,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              med.name,
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 4,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets
-                                      .symmetric(
-                                    horizontal: 10,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color:
-                                        statusColor.withOpacity(0.08),
-                                    borderRadius:
-                                        BorderRadius.circular(999),
-                                    border: Border.all(
-                                      color: statusColor
-                                          .withOpacity(0.4),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    statusText,
-                                    style: TextStyle(
-                                      color: statusColor,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ),
-                                if (med.price != null &&
-                                    med.price!.isNotEmpty)
-                                  Chip(
-                                    label: Text(
-                                      'Fiyat: ${med.price}',
-                                      style: const TextStyle(
-                                        fontSize: 11,
-                                      ),
-                                    ),
-                                    visualDensity:
-                                        VisualDensity.compact,
-                                    materialTapTargetSize:
-                                        MaterialTapTargetSize
-                                            .shrinkWrap,
-                                  ),
-                                if (med.barcode != null &&
-                                    med.barcode!.isNotEmpty)
-                                  Chip(
-                                    avatar: const Icon(
-                                      Icons.qr_code_2,
-                                      size: 14,
-                                    ),
-                                    label: Text(
-                                      med.barcode!,
-                                      style: const TextStyle(
-                                        fontSize: 11,
-                                      ),
-                                    ),
-                                    visualDensity:
-                                        VisualDensity.compact,
-                                    materialTapTargetSize:
-                                        MaterialTapTargetSize
-                                            .shrinkWrap,
-                                  ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 12),
-
-              // TEMEL BİLGİLER
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(14.0),
-                  child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Temel Bilgiler',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      _buildInfoRow(
-                        'Etken madde',
-                        med.activeIngredient.isEmpty
-                            ? null
-                            : med.activeIngredient,
-                      ),
-                      _buildInfoRow(
-                        'Firma',
-                        med.company.isEmpty ? null : med.company,
-                      ),
-                      _buildInfoRow(
-                        'ATC Kodu',
-                        med.atcCode,
-                      ),
-                      _buildInfoRow(
-                        'Güncelleme Tarihi',
-                        med.lastUpdate,
-                      ),
-                      _buildInfoRow(
-                        'Harf',
-                        med.letter,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 12),
-
-              // UZUN METİN BÖLÜMLERİ
-              _buildSection(
-                title: 'Nasıl Kullanılır?',
-                content: med.howToUse,
-              ),
-              _buildSection(
-                title: 'Hangi Hastalıklar İçin Kullanılır?',
-                content: med.indications,
-              ),
-              _buildSection(
-                title: 'Prospektüs Bilgisi',
-                content: med.prosp,
-              ),
-
-              const SizedBox(height: 8),
-
-              if (med.detailUrl != null &&
-                  med.detailUrl!.isNotEmpty)
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: () => _openDetailUrl(context),
-                    icon: const Icon(Icons.open_in_new, size: 18),
-                    label: const Text('Resmî detay sayfasını aç'),
-                  ),
-                ),
-
-              const SizedBox(height: 16),
-              Text(
-                '⚠️ Bu bilgiler sadece bilgilendirme amaçlıdır. İlaçları mutlaka doktorunuzun önerdiği şekilde kullanınız.',
-                style: TextStyle(
-                  color: Colors.orange.shade800,
-                  fontSize: 12.5,
-                  height: 1.3,
                 ),
               ),
             ],

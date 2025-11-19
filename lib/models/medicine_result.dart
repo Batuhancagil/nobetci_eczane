@@ -8,11 +8,17 @@ class MedicineResult {
   final String? prescriptionStatus; // Prescription Status
   final String? atcCode; // ATC Code
   final String? lastUpdate; // Last Update Date
-  final String? detailUrl; // Detail Page URL
   final String? howToUse; // Nasıl Kullanılmalı?
   final String? indications; // Hangi Hastalıklar İçin Kullanılır?
   final String? letter; // Letter
   final String? prosp; // Prosp
+  
+  // Citation source URLs (open source only)
+  final String? sourceUrlActiveIngredient; // PubChem
+  final String? sourceUrlAtcCode; // WHO ATC/DDD
+  final String? sourceUrlCompany; // TİTCK
+  final String? sourceUrlUsageInfo; // PubMed Central
+  final String? sourceUrlDrugInfo; // FarmaLOG
 
   MedicineResult({
     required this.name,
@@ -24,10 +30,14 @@ class MedicineResult {
     this.prescriptionStatus,
     this.atcCode,
     this.lastUpdate,
-    this.detailUrl,
     this.howToUse,
     this.indications,
     this.letter,
     this.prosp,
+    this.sourceUrlActiveIngredient,
+    this.sourceUrlAtcCode,
+    this.sourceUrlCompany,
+    this.sourceUrlUsageInfo,
+    this.sourceUrlDrugInfo,
   });
 }
