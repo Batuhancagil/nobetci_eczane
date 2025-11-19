@@ -413,7 +413,7 @@ class _MedicineSearchPageState extends State<MedicineSearchPage> {
                                 Navigator.of(context).push(
                                   MaterialPageRoute(
                                     builder: (_) =>
-                                        MedicineDetailPage(med: med),
+                                        MedicineDetailPage(medicine: med),
                                   ),
                                 );
                               },
