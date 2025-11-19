@@ -78,6 +78,7 @@ class _MedicineSearchPageState extends State<MedicineSearchPage> {
       int idxCompany = header.indexOf('Pharmaceutical Company');
       int idxBarcode = header.indexOf('Barcode');
       int idxLastUpdate = header.indexOf('Last Update Date');
+      int idxDetailUrl = header.indexOf('Detail URL');
       int idxHowToUse = header.indexOf('Nasıl Kullanılmalı?');
       int idxIndications =
           header.indexOf('Hangi Hastalıklar İçin Kullanılır?');
@@ -109,6 +110,7 @@ class _MedicineSearchPageState extends State<MedicineSearchPage> {
         final prescStatus = getField(row, idxPrescStatus).trim();
         final atc = getField(row, idxAtc).trim();
         final lastUpdate = getField(row, idxLastUpdate).trim();
+        final detailUrl = getField(row, idxDetailUrl).trim();
         final howToUse = getField(row, idxHowToUse).trim();
         final indications = getField(row, idxIndications).trim();
         final letter = getField(row, idxLetter).trim();
@@ -134,6 +136,7 @@ class _MedicineSearchPageState extends State<MedicineSearchPage> {
                 prescStatus.isEmpty ? null : prescStatus,
             atcCode: atc.isEmpty ? null : atc,
             lastUpdate: lastUpdate.isEmpty ? null : lastUpdate,
+            detailUrl: detailUrl.isEmpty ? null : detailUrl,
             howToUse: howToUse.isEmpty ? null : howToUse,
             indications: indications.isEmpty ? null : indications,
             letter: letter.isEmpty ? null : letter,

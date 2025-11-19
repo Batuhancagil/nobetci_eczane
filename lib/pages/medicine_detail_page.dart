@@ -18,6 +18,15 @@ class MedicineDetailPage extends StatelessWidget {
     }
   }
 
+  Future<void> _openDetailUrl() async {
+    final url = medicine.detailUrl;
+    if (url == null || url.isEmpty) return;
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
   Widget _buildInfoRow(String label, String? value, {String? sourceUrl, String? sourceName}) {
     if (value == null || value.isEmpty) return const SizedBox.shrink();
     return Padding(
@@ -336,6 +345,25 @@ class MedicineDetailPage extends StatelessWidget {
                   ),
                 ),
               ),
+
+              const SizedBox(height: 16),
+
+              // Detail URL Button
+              if (medicine.detailUrl != null && medicine.detailUrl!.isNotEmpty)
+                Card(
+                  margin: EdgeInsets.zero,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: FilledButton.icon(
+                        onPressed: _openDetailUrl,
+                        icon: const Icon(Icons.open_in_new),
+                        label: const Text('Resmi detay sayfası'),
+                      ),
+                    ),
+                  ),
+                ),
 
               const SizedBox(height: 16),
 

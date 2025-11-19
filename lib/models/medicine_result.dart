@@ -8,6 +8,7 @@ class MedicineResult {
   final String? prescriptionStatus; // Prescription Status
   final String? atcCode; // ATC Code
   final String? lastUpdate; // Last Update Date
+  final String? detailUrl; // Detail Page URL
   final String? howToUse; // Nasıl Kullanılmalı?
   final String? indications; // Hangi Hastalıklar İçin Kullanılır?
   final String? letter; // Letter
@@ -30,6 +31,7 @@ class MedicineResult {
     this.prescriptionStatus,
     this.atcCode,
     this.lastUpdate,
+    this.detailUrl,
     this.howToUse,
     this.indications,
     this.letter,
