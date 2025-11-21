@@ -1,0 +1,37 @@
+workflows:
+  android-ios-workflow:
+    name: Android & iOS Workflow
+    max_build_duration: 120
+    instance_type: mac_mini_m1
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Get dependencies
+        script: |
+          flutter pub get
+      - name: Build Android APK
+        script: |
+          flutter build apk --release
+      - name: Build Android App Bundle
+        script: |
+          flutter build appbundle --release
+      - name: Build iOS
+        script: |
+          cd ios
+          pod install
+          cd ..
+          flutter build ios --release --no-codesign
+    artifacts:
+      - build/**/outputs/**/*.apk
+      - build/**/outputs/**/*.aab
+      - build/ios/**/*.app
+    publishing:
+      email:
+        recipients:
+          - batuhancagil@example.com
+        notify:
+          success: true
+          failure: true
+
